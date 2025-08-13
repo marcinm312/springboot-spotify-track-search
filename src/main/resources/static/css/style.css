@@ -1,0 +1,158 @@
+.clearfix::after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+button.btn-primary {
+    margin-bottom: 4px;
+}
+
+div.wrapper {
+    margin: 30px 30px 20px 30px;
+}
+
+div.usertoolbar {
+    margin-bottom: 5px;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+body {
+    line-height: 1.25;
+}
+
+select.form-select {
+    display: inline;
+}
+
+p.message {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+div.messagebuttons {
+    margin-top: 30px;
+}
+
+.right {
+    float: right;
+}
+
+div.group {
+    display: inline-block;
+}
+
+div.usertoolbar p {
+    margin-right: 4px;
+    display: inline-block;
+}
+
+div.toolbar {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#toolbar {
+    margin: 0 4px 10px 0;
+}
+
+table.table tbody tr td {
+    vertical-align: middle;
+}
+
+div.section {
+    margin-top: 20px;
+}
+
+form.common-form {
+    max-width: 600px;
+}
+
+form.search-form * {
+    display: inline-block;
+    width: auto;
+}
+
+p.empty {
+    margin-top: 20px;
+    font-size: 20px;
+    color: red;
+}
+
+div.deleteuser {
+    margin-top: 20px;
+}
+
+div.formbuttons {
+    margin-top: 30px;
+}
+
+span.form-text {
+    color: red;
+}
+
+#toolbar form {
+    display: inline-block;
+}
+
+.page-list {
+    display: inline-block;
+}
+
+.paginationtoolbar .pagination-detail {
+    margin-bottom: 10px;
+}
+
+.paginationtoolbar .pagination-detail select {
+    width: 80px;
+}
+
+ul.pagination {
+    margin: 0;
+}
+
+#pageSizeSelectForm {
+    display: none;
+}
+
+.paginationtoolbar .pagination * {
+    display: inline-block;
+}
+
+img.album-image {
+    height: 150px;
+}
+
+@media (max-width: 414px) {
+    div.wrapper {
+        margin: 15px;
+    }
+
+    input.search-input {
+        width: 200px;
+    }
+}
+
+@media (max-width: 360px) {
+    input.search-input {
+        width: 180px;
+    }
+}
+
+@media (max-width: 320px) {
+    div.wrapper {
+        margin: 5px;
+    }
+
+    input.search-input {
+        width: 160px;
+    }
+}
+	
