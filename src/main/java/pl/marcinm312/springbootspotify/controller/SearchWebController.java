@@ -16,7 +16,6 @@ import pl.marcinm312.springbootspotify.model.dto.SpotifyAlbumDto;
 import pl.marcinm312.springbootspotify.service.SpotifyAlbumClient;
 import pl.marcinm312.springbootspotify.utils.SessionUtils;
 
-import java.net.Authenticator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
