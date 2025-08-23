@@ -5,6 +5,8 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,6 +30,7 @@ public class SearchWebController {
 
 	private final SpotifyAlbumClient spotifyAlbumClient;
 	private final SessionUtils sessionUtils;
+	private final OAuth2AuthorizedClientService authorizedClientService;
 
 	private static final String SEARCH_ERROR_FORMAT = "Błąd podczas wyszukiwania: %s";
 
@@ -43,7 +46,8 @@ public class SearchWebController {
 		String errorMessage = "";
 
 		try {
-			albumList = spotifyAlbumClient.getAlbumsByAuthor(authenticationToken, query);
+			String token = getJwtFromAuthorization(authenticationToken);
+			albumList = spotifyAlbumClient.getAlbumsByAuthor(token, query);
 			log.info("albumList.size()={}", albumList.size());
 		} catch (HttpClientErrorException exc) {
 			errorMessage = String.format("Błąd podczas wyszukiwania. Status HTTP: %s. Treść komunikatu: %s",
@@ -76,5 +80,17 @@ public class SearchWebController {
 
 	private void logoutActionWithReload() {
 		sessionUtils.expireCurrentSession();
+	}
+
+	private String getJwtFromAuthorization(OAuth2AuthenticationToken authenticationToken) {
+
+		if (authenticationToken == null) {
+			return null;
+		}
+		String authenticationName = authenticationToken.getName();
+		log.info("user={}", authenticationName);
+		OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient
+				(authenticationToken.getAuthorizedClientRegistrationId(), authenticationName);
+		return client.getAccessToken().getTokenValue();
 	}
 }

@@ -23,9 +23,9 @@
         Aby przejść do wyszukiwarki utworów, niezbędne będzie zalogowanie się,
         za pomocą konta w serwisie Spotify
     </p>
-    <!--<button class="btn btn-outline-primary"
-                onclick="window.location.href = 'swagger-ui/index.html'">Dokumentacja API
-    </button>-->
+    <button class="btn btn-outline-primary"
+        onclick="window.location.href = 'swagger-ui/index.html'">Dokumentacja API
+    </button>
 </div>
 
 </body>
