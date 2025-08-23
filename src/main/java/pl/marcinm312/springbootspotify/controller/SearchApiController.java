@@ -13,6 +13,7 @@ import pl.marcinm312.springbootspotify.model.dto.SpotifyAlbumDto;
 import pl.marcinm312.springbootspotify.service.SpotifyAlbumClient;
 
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -22,12 +23,17 @@ public class SearchApiController {
 
 	private final SpotifyAlbumClient spotifyAlbumClient;
 
-	@GetMapping("/search/")
+	@GetMapping("/search")
 	public List<SpotifyAlbumDto> search(BearerTokenAuthentication authentication, @RequestParam(required = false) String query) {
 
 		String authenticationName = authentication.getName();
 		log.info("user={}", authenticationName);
 		String tokenValue = authentication.getToken().getTokenValue();
 		return spotifyAlbumClient.getAlbumsByAuthor(tokenValue, query);
+	}
+
+	@GetMapping("/me")
+	public Map<String, Object> getUserDetails(BearerTokenAuthentication authentication) {
+		return authentication.getTokenAttributes();
 	}
 }
