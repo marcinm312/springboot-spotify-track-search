@@ -45,10 +45,12 @@ public class SpotifyAlbumClient {
 			return new ArrayList<>();
 		}
 
-		return spotifyAlbum.getTracks().getItems()
+		List<SpotifyAlbumDto> albumList = spotifyAlbum.getTracks().getItems()
 				.stream()
 				.map(SpotifyAlbumClient::convertSpotifyItemToDto)
 				.toList();
+		log.info("albumList.size()={}", albumList.size());
+		return albumList;
 	}
 
 	private static SpotifyAlbumDto convertSpotifyItemToDto(Item item) {

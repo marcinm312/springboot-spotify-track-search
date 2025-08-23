@@ -48,7 +48,6 @@ public class SearchWebController {
 		try {
 			String token = getJwtFromAuthorization(authenticationToken);
 			albumList = spotifyAlbumClient.getAlbumsByAuthor(token, query);
-			log.info("albumList.size()={}", albumList.size());
 		} catch (HttpClientErrorException exc) {
 			errorMessage = String.format("Błąd podczas wyszukiwania. Status HTTP: %s. Treść komunikatu: %s",
 					exc.getStatusText(), exc.getMessage());
