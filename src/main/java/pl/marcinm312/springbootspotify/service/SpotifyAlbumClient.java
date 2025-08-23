@@ -92,6 +92,4 @@ public class SpotifyAlbumClient {
 				httpEntity,
 				SpotifyAlbum.class);
 	}
-
-
 }

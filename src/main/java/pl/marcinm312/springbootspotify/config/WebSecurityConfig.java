@@ -69,6 +69,7 @@ public class WebSecurityConfig {
 								}
 								return null; // brak tokenu => pozwala przejść do permitAll
 							})
+							.authenticationEntryPoint(new CustomAuthenticationEntryPoint())
 							.opaqueToken(opaque -> opaque.introspector(spotifyIntrospector()))
 					)
 
@@ -86,12 +87,18 @@ public class WebSecurityConfig {
 				HttpHeaders headers = new HttpHeaders();
 				headers.setBearerAuth(token);
 
-				ResponseEntity<Map> response = restTemplate.exchange(
-						"https://api.spotify.com/v1/me",
-						HttpMethod.GET,
-						new HttpEntity<>(headers),
-						Map.class
-				);
+				ResponseEntity<Map> response;
+				try {
+					response = restTemplate.exchange(
+							"https://api.spotify.com/v1/me",
+							HttpMethod.GET,
+							new HttpEntity<>(headers),
+							Map.class
+					);
+				} catch (Exception e) {
+					throw new OAuth2AuthenticationException(new OAuth2Error("invalid_token"),
+							"Spotify token introspection failed");
+				}
 
 				if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
 					throw new OAuth2AuthenticationException(new OAuth2Error("invalid_token"),
