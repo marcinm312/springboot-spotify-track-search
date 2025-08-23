@@ -5,9 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.*;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -27,18 +24,14 @@ import java.util.Objects;
 public class SpotifyAlbumClient {
 
 	private final RestTemplate restTemplate;
-	private final OAuth2AuthorizedClientService authorizedClientService;
 
-
-	public List<SpotifyAlbumDto> getAlbumsByAuthor(OAuth2AuthenticationToken authenticationToken, String authorName) {
+	public List<SpotifyAlbumDto> getAlbumsByAuthor(String token, String authorName) {
 
 		if (StringUtils.isBlank(authorName)) {
 			return new ArrayList<>();
 		}
 
-		String jwt = getJwtFromAuthorization(authenticationToken);
-
-		ResponseEntity<SpotifyAlbum> exchange = getSpotifyAlbumResponseEntity(authorName, jwt);
+		ResponseEntity<SpotifyAlbum> exchange = getSpotifyAlbumResponseEntity(authorName, token);
 		HttpStatusCode httpStatus = exchange.getStatusCode();
 		log.info("status={}", httpStatus);
 
@@ -52,10 +45,12 @@ public class SpotifyAlbumClient {
 			return new ArrayList<>();
 		}
 
-		return spotifyAlbum.getTracks().getItems()
+		List<SpotifyAlbumDto> albumList = spotifyAlbum.getTracks().getItems()
 				.stream()
 				.map(SpotifyAlbumClient::convertSpotifyItemToDto)
 				.toList();
+		log.info("albumList.size()={}", albumList.size());
+		return albumList;
 	}
 
 	private static SpotifyAlbumDto convertSpotifyItemToDto(Item item) {
@@ -72,18 +67,6 @@ public class SpotifyAlbumClient {
 				.artists(artists)
 				.albumName(item.getAlbum().getName())
 				.build();
-	}
-
-	private String getJwtFromAuthorization(OAuth2AuthenticationToken authenticationToken) {
-
-		if (authenticationToken == null) {
-			return null;
-		}
-		String authenticationName = authenticationToken.getName();
-		log.info("user={}", authenticationName);
-		OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient
-				(authenticationToken.getAuthorizedClientRegistrationId(), authenticationName);
-		return client.getAccessToken().getTokenValue();
 	}
 
 	private ResponseEntity<SpotifyAlbum> getSpotifyAlbumResponseEntity(String authorName, String jwt) {
