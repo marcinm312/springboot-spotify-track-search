@@ -52,8 +52,7 @@ public class WebSecurityConfig {
 					.authorizeHttpRequests(auth -> auth
 
 							.requestMatchers(
-									new MvcRequestMatcher(introspector, "/api/getTestToken"),
-									new MvcRequestMatcher(introspector, "/api/oauth2/introspect")
+									new MvcRequestMatcher(introspector, "/api/public/**")
 							)
 							.permitAll()
 
@@ -61,8 +60,6 @@ public class WebSecurityConfig {
 
 					.sessionManagement(sessionManagement -> sessionManagement
 							.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-					//.addFilterBefore(new BearerTokenPresenceFilter(), UsernamePasswordAuthenticationFilter.class)
 
 					.oauth2ResourceServer(oauth2 -> oauth2
 							.bearerTokenResolver(request -> {
