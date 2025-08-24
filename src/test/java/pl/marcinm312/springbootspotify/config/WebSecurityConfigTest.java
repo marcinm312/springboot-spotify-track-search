@@ -5,14 +5,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.test.mock.mockito.SpyBeans;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
-import pl.marcinm312.springbootspotify.gui.AfterLogoutGui;
+import pl.marcinm312.springbootspotify.controller.SearchWebController;
+import pl.marcinm312.springbootspotify.service.SpotifyAlbumClient;
+import pl.marcinm312.springbootspotify.utils.SessionUtils;
 
 import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.logout;
@@ -24,12 +32,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest
-@ComponentScan(basePackageClasses = AfterLogoutGui.class,
+@ComponentScan(basePackageClasses = SearchWebController.class,
 		useDefaultFilters = false,
 		includeFilters = {
-				@ComponentScan.Filter(type = ASSIGNABLE_TYPE, value = AfterLogoutGui.class)
+				@ComponentScan.Filter(type = ASSIGNABLE_TYPE, value = SearchWebController.class)
 		})
 @Import({WebSecurityConfig.class})
+@MockBeans({@MockBean(SessionUtils.class)})
+@SpyBeans({@SpyBean(SpotifyAlbumClient.class)})
+@ContextConfiguration(classes = BeansConfig.class)
 @WebAppConfiguration
 class WebSecurityConfigTest {
 
@@ -53,7 +64,7 @@ class WebSecurityConfigTest {
 		mockMvc.perform(
 						logout())
 				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/log-out"))
+				.andExpect(redirectedUrl("/"))
 				.andExpect(unauthenticated());
 	}
 }
