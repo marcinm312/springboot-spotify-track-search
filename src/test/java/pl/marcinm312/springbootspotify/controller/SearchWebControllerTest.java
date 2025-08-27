@@ -8,12 +8,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.test.mock.mockito.SpyBeans;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.context.ContextConfiguration;
@@ -55,7 +57,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 				@ComponentScan.Filter(type = ASSIGNABLE_TYPE, value = SearchWebController.class)
 		})
 @Import({WebSecurityConfig.class})
-@MockBeans({@MockBean(SessionUtils.class), @MockBean(OAuth2AuthorizedClientService.class)})
+@MockBeans({@MockBean(SessionUtils.class)})
+@SpyBeans({@SpyBean(OAuth2AuthorizedClientService.class)})
 @ContextConfiguration(classes = BeansConfig.class)
 @WebAppConfiguration
 class SearchWebControllerTest {
@@ -64,6 +67,9 @@ class SearchWebControllerTest {
 
 	@Autowired
 	private WebApplicationContext webApplicationContext;
+
+	@Autowired
+	private ClientRegistrationRepository clientRegistrationRepository;
 
 	private MockRestServiceServer mockServer;
 
@@ -99,9 +105,14 @@ class SearchWebControllerTest {
 		OAuth2User oauth2User = new DefaultOAuth2User(
 				AuthorityUtils.createAuthorityList("SCOPE_message:read"),
 				userParams, "user_name");
-
+		
 		mockMvc.perform(
-				get("/app/search/?query=krzysztof krawczyk").with(oauth2Login().oauth2User(oauth2User)));
+				get("/app/search/?query=krzysztof krawczyk")
+						.with(oauth2Login()
+								.oauth2User(oauth2User)
+								.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+						)
+		);
 
 		mockServer.verify();
 		verify(spotifyAlbumClient, times(1)).getAlbumsByAuthor(any(), eq("krzysztof krawczyk"));
