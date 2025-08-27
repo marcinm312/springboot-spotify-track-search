@@ -1,6 +1,5 @@
 package pl.marcinm312.springbootspotify.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
