@@ -12,7 +12,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
+import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -27,15 +30,15 @@ import pl.marcinm312.springbootspotify.service.SpotifyAlbumClient;
 import pl.marcinm312.springbootspotify.testdataprovider.ResponseReaderFromFile;
 import pl.marcinm312.springbootspotify.utils.SessionUtils;
 
-import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.opaqueToken;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -94,5 +97,22 @@ class SearchApiControllerTest {
 
 		mockServer.verify();
 		verify(spotifyAlbumClient, times(1)).getAlbumsByAuthor(any(), eq("krzysztof krawczyk"));
+	}
+
+	@Test
+	void getUserDetails() throws Exception {
+
+		Map<String, Object> userParams = new HashMap<>();
+		userParams.put("user_name", "foo_user");
+		userParams.put("display_name", "Jan Kowalski");
+		userParams.put("email", "jan.kowalski@gmail.com");
+
+		OAuth2AuthenticatedPrincipal principal = new DefaultOAuth2AuthenticatedPrincipal(
+				(String) userParams.get("user_name"),
+				userParams,
+				AuthorityUtils.createAuthorityList("SCOPE_message:read"));
+
+		mockMvc.perform(
+				get("/api/me").with(opaqueToken().principal(principal)));
 	}
 }
