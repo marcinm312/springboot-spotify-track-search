@@ -12,7 +12,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -28,6 +31,8 @@ import pl.marcinm312.springbootspotify.testdataprovider.ResponseReaderFromFile;
 import pl.marcinm312.springbootspotify.utils.SessionUtils;
 
 import java.nio.file.FileSystems;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -87,8 +92,16 @@ class SearchWebControllerTest {
 		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
 				.andRespond(withSuccess(ResponseReaderFromFile.readResponseFromFile(filePath), MediaType.APPLICATION_JSON));
 
+		Map<String, Object> userParams = new HashMap<>();
+		userParams.put("user_name", "foo_user");
+		userParams.put("display_name", "Jan Kowalski");
+		userParams.put("email", "jan.kowalski@gmail.com");
+		OAuth2User oauth2User = new DefaultOAuth2User(
+				AuthorityUtils.createAuthorityList("SCOPE_message:read"),
+				userParams, "user_name");
+
 		mockMvc.perform(
-				get("/app/search/?query=krzysztof krawczyk").with(oauth2Login()));
+				get("/app/search/?query=krzysztof krawczyk").with(oauth2Login().oauth2User(oauth2User)));
 
 		mockServer.verify();
 		verify(spotifyAlbumClient, times(1)).getAlbumsByAuthor(any(), eq("krzysztof krawczyk"));
