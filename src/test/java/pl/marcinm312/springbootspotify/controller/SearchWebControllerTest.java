@@ -105,7 +105,7 @@ class SearchWebControllerTest {
 		OAuth2User oauth2User = new DefaultOAuth2User(
 				AuthorityUtils.createAuthorityList("SCOPE_message:read"),
 				userParams, "user_name");
-		
+
 		mockMvc.perform(
 				get("/app/search/?query=krzysztof krawczyk")
 						.with(oauth2Login()

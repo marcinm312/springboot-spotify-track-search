@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.test.mock.mockito.SpyBeans;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
@@ -55,7 +56,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 				@ComponentScan.Filter(type = ASSIGNABLE_TYPE, value = SearchApiController.class)
 		})
 @Import({WebSecurityConfig.class})
-@MockBeans({@MockBean(SessionUtils.class), @MockBean(OAuth2AuthorizedClientService.class)})
+@MockBeans({@MockBean(SessionUtils.class)})
+@SpyBeans({@SpyBean(OAuth2AuthorizedClientService.class)})
 @ContextConfiguration(classes = BeansConfig.class)
 @WebAppConfiguration
 class SearchApiControllerTest {
@@ -92,8 +94,21 @@ class SearchApiControllerTest {
 		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
 				.andRespond(withSuccess(ResponseReaderFromFile.readResponseFromFile(filePath), MediaType.APPLICATION_JSON));
 
+		Map<String, Object> userParams = new HashMap<>();
+		userParams.put("user_name", "foo_user");
+		userParams.put("display_name", "Jan Kowalski");
+		userParams.put("email", "jan.kowalski@gmail.com");
+
+		OAuth2AuthenticatedPrincipal principal = new DefaultOAuth2AuthenticatedPrincipal(
+				(String) userParams.get("user_name"),
+				userParams,
+				AuthorityUtils.createAuthorityList("SCOPE_message:read"));
+
 		mockMvc.perform(
-				get("/api/search?query=krzysztof krawczyk").with(opaqueToken()));
+				get("/api/search?query=krzysztof krawczyk").with(opaqueToken()
+						.principal(principal)
+				)
+		);
 
 		mockServer.verify();
 		verify(spotifyAlbumClient, times(1)).getAlbumsByAuthor(any(), eq("krzysztof krawczyk"));
@@ -113,6 +128,9 @@ class SearchApiControllerTest {
 				AuthorityUtils.createAuthorityList("SCOPE_message:read"));
 
 		mockMvc.perform(
-				get("/api/me").with(opaqueToken().principal(principal)));
+				get("/api/me").with(opaqueToken()
+						.principal(principal)
+				)
+		);
 	}
 }
