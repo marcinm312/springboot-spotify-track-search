@@ -90,6 +90,9 @@ public class SearchWebController {
 		log.info("user={}", authenticationName);
 		OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient
 				(authenticationToken.getAuthorizedClientRegistrationId(), authenticationName);
+		if (client == null) {
+			return null;
+		}
 		return client.getAccessToken().getTokenValue();
 	}
 }
