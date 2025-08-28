@@ -2,88 +2,46 @@ package pl.marcinm312.springbootspotify.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.MockBeans;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.boot.test.mock.mockito.SpyBeans;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.WebApplicationContext;
-import pl.marcinm312.springbootspotify.config.BeansConfig;
-import pl.marcinm312.springbootspotify.config.WebSecurityConfig;
-import pl.marcinm312.springbootspotify.service.SpotifyAlbumClient;
 import pl.marcinm312.springbootspotify.testdataprovider.ResponseReaderFromFile;
-import pl.marcinm312.springbootspotify.utils.SessionUtils;
 
 import java.nio.file.FileSystems;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.opaqueToken;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest
-@ComponentScan(basePackageClasses = SearchApiController.class,
-		useDefaultFilters = false,
-		includeFilters = {
-				@ComponentScan.Filter(type = ASSIGNABLE_TYPE, value = SearchApiController.class)
-		})
-@Import({WebSecurityConfig.class})
-@MockBeans({@MockBean(SessionUtils.class)})
-@SpyBeans({@SpyBean(OAuth2AuthorizedClientService.class)})
-@ContextConfiguration(classes = BeansConfig.class)
-@WebAppConfiguration
+@SpringBootTest
+@AutoConfigureMockMvc(print = MockMvcPrint.SYSTEM_OUT, printOnlyOnFailure = false)
 class SearchApiControllerTest {
 
-	private MockMvc mockMvc;
-
 	@Autowired
-	private WebApplicationContext webApplicationContext;
+	private MockMvc mockMvc;
 
 	private MockRestServiceServer mockServer;
 
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@SpyBean
-	private SpotifyAlbumClient spotifyAlbumClient;
-
 	@BeforeEach
 	void setup() {
-
 		mockServer = MockRestServiceServer.createServer(restTemplate);
-		mockMvc = MockMvcBuilders
-				.webAppContextSetup(this.webApplicationContext)
-				.apply(springSecurity())
-				.alwaysDo(print())
-				.build();
 	}
 
 	@Test
@@ -108,10 +66,17 @@ class SearchApiControllerTest {
 				get("/api/search?query=krzysztof krawczyk").with(opaqueToken()
 						.principal(principal)
 				)
-		);
+		).andExpect(status().isOk());
 
 		mockServer.verify();
-		verify(spotifyAlbumClient, times(1)).getAlbumsByAuthor(any(), eq("krzysztof krawczyk"));
+	}
+
+	@Test
+	void search401() throws Exception {
+
+		mockMvc.perform(
+				get("/api/search?query=krzysztof krawczyk")
+		).andExpect(status().isUnauthorized());
 	}
 
 	@Test
@@ -131,6 +96,14 @@ class SearchApiControllerTest {
 				get("/api/me").with(opaqueToken()
 						.principal(principal)
 				)
-		);
+		).andExpect(status().isOk());
+	}
+
+	@Test
+	void getUserDetails401() throws Exception {
+
+		mockMvc.perform(
+				get("/api/me")
+		).andExpect(status().isUnauthorized());
 	}
 }
