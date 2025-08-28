@@ -18,8 +18,8 @@ public class BeansConfig {
 	public RestTemplate restTemplate() {
 
 		return new RestTemplateBuilder()
-				.setConnectTimeout(Duration.ofSeconds(spotifyTimeout))
-				.setReadTimeout(Duration.ofSeconds(spotifyTimeout))
+				.connectTimeout(Duration.ofSeconds(spotifyTimeout))
+				.readTimeout(Duration.ofSeconds(spotifyTimeout))
 				.build();
 	}
 }

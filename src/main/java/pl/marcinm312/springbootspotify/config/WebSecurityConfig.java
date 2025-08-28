@@ -26,11 +26,9 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -46,13 +44,13 @@ public class WebSecurityConfig {
 	public static class ApiWebSecurityConfig {
 
 		@Bean
-		SecurityFilterChain apiFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+		SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
 
 			http.securityMatcher("/api/**") // tylko REST API
 					.authorizeHttpRequests(auth -> auth
 
 							.requestMatchers(
-									new MvcRequestMatcher(introspector, "/api/public/**")
+									"/api/public/**"
 							)
 							.permitAll()
 
@@ -136,7 +134,7 @@ public class WebSecurityConfig {
 		private final ClientRegistrationRepository clientRegistrationRepository;
 
 		@Bean
-		public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+		public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
 			DefaultOAuth2AuthorizationRequestResolver authorizationRequestResolver = new DefaultOAuth2AuthorizationRequestResolver(this.clientRegistrationRepository, "/oauth2/authorization");
 			authorizationRequestResolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
@@ -146,29 +144,29 @@ public class WebSecurityConfig {
 
 							.requestMatchers(
 
-									new MvcRequestMatcher(introspector, "/"),
-									new MvcRequestMatcher(introspector, "/error"),
-									new MvcRequestMatcher(introspector, "error/"),
-									new MvcRequestMatcher(introspector, "/favicon.ico"),
+									"/",
+									"/error",
+									"error/",
+									"/favicon.ico",
 
 									//CSS
-									new MvcRequestMatcher(introspector, "/css/style.css"),
+									"/css/style.css",
 
 									//SWAGGER
-									new MvcRequestMatcher(introspector, "/swagger/**"),
-									new MvcRequestMatcher(introspector, "/swagger-ui/**"),
-									new MvcRequestMatcher(introspector, "/swagger-ui.html"),
-									new MvcRequestMatcher(introspector, "/webjars/**"),
-									new MvcRequestMatcher(introspector, "/swagger-resources/**"),
-									new MvcRequestMatcher(introspector, "/configuration/**"),
-									new MvcRequestMatcher(introspector, "/v3/api-docs/**")
+									"/swagger/**",
+									"/swagger-ui/**",
+									"/swagger-ui.html",
+									"/webjars/**",
+									"/swagger-resources/**",
+									"/configuration/**",
+									"/v3/api-docs/**"
 
 							)
 							.permitAll()
 							.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
 
 							.requestMatchers(
-									new MvcRequestMatcher(introspector, "/app/**")
+									"/app/**"
 							)
 							.authenticated()
 							.anyRequest().denyAll()
@@ -181,7 +179,11 @@ public class WebSecurityConfig {
 											.authorizationRequestResolver(authorizationRequestResolver))
 									.failureHandler(new CustomOAuth2FailureHandler())
 					)
-					.logout(logout -> logout.permitAll().logoutSuccessUrl("/").logoutRequestMatcher(new AntPathRequestMatcher("/logout")))
+					.logout(logout -> logout
+							.permitAll()
+							.logoutSuccessUrl("/")
+							.logoutRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/logout"))
+					)
 
 					.sessionManagement(
 							sessionManagement -> sessionManagement
