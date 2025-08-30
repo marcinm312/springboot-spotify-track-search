@@ -146,7 +146,6 @@ public class WebSecurityConfig {
 
 									"/",
 									"/error",
-									"error/",
 									"/favicon.ico",
 
 									//CSS
