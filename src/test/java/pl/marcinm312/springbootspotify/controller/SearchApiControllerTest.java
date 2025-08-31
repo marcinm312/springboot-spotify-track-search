@@ -1,5 +1,8 @@
 package pl.marcinm312.springbootspotify.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,23 +11,21 @@ import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 import pl.marcinm312.springbootspotify.testdataprovider.ResponseReaderFromFile;
+import pl.marcinm312.springbootspotify.testdataprovider.UserDataProvider;
 
 import java.nio.file.FileSystems;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.opaqueToken;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -39,36 +40,34 @@ class SearchApiControllerTest {
 	@Autowired
 	private RestTemplate restTemplate;
 
+	private final ObjectMapper mapper = new ObjectMapper();
+
+	private final OAuth2AuthenticatedPrincipal examplePrincipal = UserDataProvider.getOAuth2AuthenticatedPrincipal();
+
 	@BeforeEach
 	void setup() {
 		mockServer = MockRestServiceServer.createServer(restTemplate);
 	}
 
 	@Test
-	void search() throws Exception {
+	void search_simpleSearchCase_success() throws Exception {
 
 		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
 		String filePath = "test_response" + FileSystems.getDefault().getSeparator() + "response.json";
 		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
 				.andRespond(withSuccess(ResponseReaderFromFile.readResponseFromFile(filePath), MediaType.APPLICATION_JSON));
 
-		Map<String, Object> userParams = new HashMap<>();
-		userParams.put("user_name", "foo_user");
-		userParams.put("display_name", "Jan Kowalski");
-		userParams.put("email", "jan.kowalski@gmail.com");
-
-		OAuth2AuthenticatedPrincipal principal = new DefaultOAuth2AuthenticatedPrincipal(
-				(String) userParams.get("user_name"),
-				userParams,
-				AuthorityUtils.createAuthorityList("SCOPE_message:read"));
-
-		mockMvc.perform(
-				get("/api/search?query=krzysztof krawczyk").with(opaqueToken()
-						.principal(principal)
-				)
-		).andExpect(status().isOk());
+		String response = mockMvc.perform(
+						get("/api/search?query=krzysztof krawczyk").with(opaqueToken()
+								.principal(examplePrincipal)
+						))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse().getContentAsString();
 
 		mockServer.verify();
+		JsonNode root = mapper.readTree(response);
+		Assertions.assertEquals(50, root.size());
 	}
 
 	@Test
@@ -82,19 +81,9 @@ class SearchApiControllerTest {
 	@Test
 	void getUserDetails() throws Exception {
 
-		Map<String, Object> userParams = new HashMap<>();
-		userParams.put("user_name", "foo_user");
-		userParams.put("display_name", "Jan Kowalski");
-		userParams.put("email", "jan.kowalski@gmail.com");
-
-		OAuth2AuthenticatedPrincipal principal = new DefaultOAuth2AuthenticatedPrincipal(
-				(String) userParams.get("user_name"),
-				userParams,
-				AuthorityUtils.createAuthorityList("SCOPE_message:read"));
-
 		mockMvc.perform(
 				get("/api/me").with(opaqueToken()
-						.principal(principal)
+						.principal(examplePrincipal)
 				)
 		).andExpect(status().isOk());
 	}
