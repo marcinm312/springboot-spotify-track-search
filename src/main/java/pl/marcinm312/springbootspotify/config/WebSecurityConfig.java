@@ -151,6 +151,9 @@ public class WebSecurityConfig {
 									//CSS
 									"/css/style.css",
 
+									//JS
+									"/js/pauseOtherAudios.js",
+
 									//SWAGGER
 									"/swagger/**",
 									"/swagger-ui/**",
