@@ -149,10 +149,10 @@ public class WebSecurityConfig {
 									"/favicon.ico",
 
 									//CSS
-									"/css/style.css",
+									"/css/**",
 
 									//JS
-									"/js/pauseOtherAudios.js",
+									"/js/**",
 
 									//SWAGGER
 									"/swagger/**",
