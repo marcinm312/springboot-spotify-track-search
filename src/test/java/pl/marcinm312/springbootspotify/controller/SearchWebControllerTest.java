@@ -23,6 +23,7 @@ import java.nio.file.FileSystems;
 import java.util.List;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -78,10 +79,13 @@ class SearchWebControllerTest {
 	}
 
 	@Test
-	void search401() throws Exception {
+	void search_withAnonymousUser_redirectToLoginPage() throws Exception {
 
 		mockMvc.perform(
-				get("/app/search/?query=krzysztof krawczyk")
-		).andExpect(status().is3xxRedirection());
+						get("/app/search/?query=krzysztof krawczyk")
+				)
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("http://localhost/oauth2/authorization/spotify"))
+				.andExpect(unauthenticated());
 	}
 }

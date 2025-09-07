@@ -29,7 +29,7 @@ public class UserDataProvider {
 				"id");
 	}
 
-	private static Map<String, Object> getExampleUserParams() {
+	public static Map<String, Object> getExampleUserParams() {
 
 		Map<String, Object> userParams = new HashMap<>();
 		userParams.put("id", "01234user56789");

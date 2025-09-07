@@ -19,6 +19,7 @@ import pl.marcinm312.springbootspotify.testdataprovider.ResponseReaderFromFile;
 import pl.marcinm312.springbootspotify.testdataprovider.UserDataProvider;
 
 import java.nio.file.FileSystems;
+import java.util.Map;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.opaqueToken;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -58,9 +59,10 @@ class SearchApiControllerTest {
 				.andRespond(withSuccess(ResponseReaderFromFile.readResponseFromFile(filePath), MediaType.APPLICATION_JSON));
 
 		String response = mockMvc.perform(
-						get("/api/search?query=krzysztof krawczyk").with(opaqueToken()
-								.principal(examplePrincipal)
-						))
+						get("/api/search?query=krzysztof krawczyk")
+								.with(opaqueToken()
+										.principal(examplePrincipal)
+								))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andReturn().getResponse().getContentAsString();
@@ -71,28 +73,39 @@ class SearchApiControllerTest {
 	}
 
 	@Test
-	void search401() throws Exception {
+	void search_withAnonymousUser_unauthorized() throws Exception {
 
 		mockMvc.perform(
-				get("/api/search?query=krzysztof krawczyk")
-		).andExpect(status().isUnauthorized());
-	}
-
-	@Test
-	void getUserDetails() throws Exception {
-
-		mockMvc.perform(
-				get("/api/me").with(opaqueToken()
-						.principal(examplePrincipal)
+						get("/api/search?query=krzysztof krawczyk")
 				)
-		).andExpect(status().isOk());
+				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
-	void getUserDetails401() throws Exception {
+	void getUserDetails_simpleCase_success() throws Exception {
+
+		String response = mockMvc.perform(
+						get("/api/me")
+								.with(opaqueToken()
+										.principal(examplePrincipal)
+								)
+				)
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse().getContentAsString();
+
+		Map responseUserMap = mapper.readValue(response, Map.class);
+		Assertions.assertEquals(UserDataProvider.getExampleUserParams().get("id"), responseUserMap.get("id"));
+		Assertions.assertEquals(UserDataProvider.getExampleUserParams().get("display_name"), responseUserMap.get("display_name"));
+		Assertions.assertEquals(UserDataProvider.getExampleUserParams().get("email"), responseUserMap.get("email"));
+	}
+
+	@Test
+	void getUserDetails_withAnonymousUser_unauthorized() throws Exception {
 
 		mockMvc.perform(
-				get("/api/me")
-		).andExpect(status().isUnauthorized());
+						get("/api/me")
+				)
+				.andExpect(status().isUnauthorized());
 	}
 }
