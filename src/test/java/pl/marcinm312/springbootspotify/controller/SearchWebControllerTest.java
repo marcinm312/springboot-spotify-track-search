@@ -3,6 +3,9 @@ package pl.marcinm312.springbootspotify.controller;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
@@ -21,6 +24,7 @@ import pl.marcinm312.springbootspotify.testdataprovider.UserDataProvider;
 
 import java.nio.file.FileSystems;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
@@ -53,6 +57,17 @@ class SearchWebControllerTest {
 	}
 
 	@Test
+	void search_withAnonymousUser_redirectToLoginPage() throws Exception {
+
+		mockMvc.perform(
+						get("/app/search/?query=krzysztof krawczyk")
+				)
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("http://localhost/oauth2/authorization/spotify"))
+				.andExpect(unauthenticated());
+	}
+
+	@Test
 	void search_simpleSearchCase_success() throws Exception {
 
 		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
@@ -78,14 +93,33 @@ class SearchWebControllerTest {
 		Assertions.assertEquals(50, albumListFromModel.size());
 	}
 
-	@Test
-	void search_withAnonymousUser_redirectToLoginPage() throws Exception {
+	@ParameterizedTest
+	@MethodSource("examplesOfEmptySearch")
+	void search_searchEmptyValue_emptyResult(String urlQuery) throws Exception {
 
-		mockMvc.perform(
-						get("/app/search/?query=krzysztof krawczyk")
-				)
-				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("http://localhost/oauth2/authorization/spotify"))
-				.andExpect(unauthenticated());
+		ModelAndView modelAndView = mockMvc.perform(
+						get("/app/search/" + urlQuery)
+								.with(oauth2Login()
+										.oauth2User(exampleOauth2User)
+										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+								))
+				.andExpect(status().isOk())
+				.andExpect(view().name("search"))
+				.andExpect(model().attribute("errorMessage", ""))
+				.andExpect(model().attribute("userString", "Jan Kowalski (jan.kowalski@gmail.com)"))
+				.andReturn().getModelAndView();
+
+		assert modelAndView != null;
+		List<SpotifyAlbumDto> albumListFromModel = (List<SpotifyAlbumDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(0, albumListFromModel.size());
+	}
+
+	private static Stream<Arguments> examplesOfEmptySearch() {
+
+		return Stream.of(
+				Arguments.of(""),
+				Arguments.of("?query="),
+				Arguments.of("?query=        ")
+		);
 	}
 }

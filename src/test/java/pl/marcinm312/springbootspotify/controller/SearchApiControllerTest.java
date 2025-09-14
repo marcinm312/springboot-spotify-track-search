@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
@@ -20,6 +23,7 @@ import pl.marcinm312.springbootspotify.testdataprovider.UserDataProvider;
 
 import java.nio.file.FileSystems;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.opaqueToken;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -51,6 +55,15 @@ class SearchApiControllerTest {
 	}
 
 	@Test
+	void search_withAnonymousUser_unauthorized() throws Exception {
+
+		mockMvc.perform(
+						get("/api/search?query=krzysztof krawczyk")
+				)
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
 	void search_simpleSearchCase_success() throws Exception {
 
 		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
@@ -72,11 +85,38 @@ class SearchApiControllerTest {
 		Assertions.assertEquals(50, root.size());
 	}
 
+	@ParameterizedTest
+	@MethodSource("examplesOfEmptySearch")
+	void search_searchEmptyValue_emptyResult(String urlQuery) throws Exception {
+
+		String response = mockMvc.perform(
+						get("/api/search" + urlQuery)
+								.with(opaqueToken()
+										.principal(examplePrincipal)
+								))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse().getContentAsString();
+
+		mockServer.verify();
+		JsonNode root = mapper.readTree(response);
+		Assertions.assertEquals(0, root.size());
+	}
+
+	private static Stream<Arguments> examplesOfEmptySearch() {
+
+		return Stream.of(
+				Arguments.of(""),
+				Arguments.of("?query="),
+				Arguments.of("?query=        ")
+		);
+	}
+
 	@Test
-	void search_withAnonymousUser_unauthorized() throws Exception {
+	void getUserDetails_withAnonymousUser_unauthorized() throws Exception {
 
 		mockMvc.perform(
-						get("/api/search?query=krzysztof krawczyk")
+						get("/api/me")
 				)
 				.andExpect(status().isUnauthorized());
 	}
@@ -98,14 +138,5 @@ class SearchApiControllerTest {
 		Assertions.assertEquals(UserDataProvider.getExampleUserParams().get("id"), responseUserMap.get("id"));
 		Assertions.assertEquals(UserDataProvider.getExampleUserParams().get("display_name"), responseUserMap.get("display_name"));
 		Assertions.assertEquals(UserDataProvider.getExampleUserParams().get("email"), responseUserMap.get("email"));
-	}
-
-	@Test
-	void getUserDetails_withAnonymousUser_unauthorized() throws Exception {
-
-		mockMvc.perform(
-						get("/api/me")
-				)
-				.andExpect(status().isUnauthorized());
 	}
 }
