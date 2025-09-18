@@ -1,6 +1,5 @@
 package pl.marcinm312.springbootspotify.service;
 
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +7,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import pl.marcinm312.springbootspotify.exception.ValidationException;
 import pl.marcinm312.springbootspotify.model.Artist;
 import pl.marcinm312.springbootspotify.model.Item;
 import pl.marcinm312.springbootspotify.model.SpotifyAlbum;

@@ -1,7 +1,6 @@
 package pl.marcinm312.springbootspotify.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
+import pl.marcinm312.springbootspotify.exception.ValidationException;
 import pl.marcinm312.springbootspotify.model.dto.SpotifyAlbumDto;
 import pl.marcinm312.springbootspotify.service.SpotifyAlbumClient;
 import pl.marcinm312.springbootspotify.utils.SessionUtils;
