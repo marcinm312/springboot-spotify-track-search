@@ -1,5 +1,6 @@
 package pl.marcinm312.springbootspotify.controller;
 
+import org.hamcrest.core.StringStartsWith;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import static org.springframework.security.test.web.servlet.response.SecurityMoc
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -120,6 +122,62 @@ class SearchWebControllerTest {
 				Arguments.of(""),
 				Arguments.of("?query="),
 				Arguments.of("?query=        ")
+		);
+	}
+
+	@Test
+	void search_expiredSpotifySession_unauthorizedMessage() throws Exception {
+
+		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
+		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
+				.andRespond(withUnauthorizedRequest());
+
+		ModelAndView modelAndView = mockMvc.perform(
+						get("/app/search/?query=krzysztof krawczyk")
+								.with(oauth2Login()
+										.oauth2User(exampleOauth2User)
+										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+								))
+				.andExpect(status().isOk())
+				.andExpect(view().name("search"))
+				.andExpect(model().attribute("errorMessage", StringStartsWith.startsWith("Błąd podczas wyszukiwania. Status HTTP: Unauthorized. Treść komunikatu: 401")))
+				.andExpect(model().attribute("userString", "Jan Kowalski (jan.kowalski@gmail.com)"))
+				.andReturn().getModelAndView();
+
+		mockServer.verify();
+		assert modelAndView != null;
+		List<SpotifyAlbumDto> albumListFromModel = (List<SpotifyAlbumDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(0, albumListFromModel.size());
+	}
+
+	@ParameterizedTest
+	@MethodSource("examplesOfSearchingWithIllegalCharacters")
+	void search_illegalCharacters_errorMessage(String searchValue) throws Exception {
+
+		ModelAndView modelAndView = mockMvc.perform(
+				get("/app/search/").param("query", searchValue)
+						.with(oauth2Login()
+								.oauth2User(exampleOauth2User)
+								.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+						))
+				.andExpect(status().isOk())
+				.andExpect(view().name("search"))
+				.andExpect(model().attribute("errorMessage", StringStartsWith.startsWith("Błąd podczas wyszukiwania: Pole wyszukiwania zawiera niedozwolone znaki! Usuń je i spróbuj ponownie")))
+				.andExpect(model().attribute("userString", "Jan Kowalski (jan.kowalski@gmail.com)"))
+				.andReturn().getModelAndView();
+
+		mockServer.verify();
+		assert modelAndView != null;
+		List<SpotifyAlbumDto> albumListFromModel = (List<SpotifyAlbumDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(0, albumListFromModel.size());
+	}
+
+	private static Stream<Arguments> examplesOfSearchingWithIllegalCharacters() {
+
+		return Stream.of(
+				Arguments.of("Kombi!@#$%?"),
+				Arguments.of("Kombi!@$%?"),
+				Arguments.of("Krzysztof Krawczyk?#?#?#?#?#")
 		);
 	}
 }
