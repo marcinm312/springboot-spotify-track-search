@@ -23,12 +23,14 @@ import pl.marcinm312.springbootspotify.testdataprovider.UserDataProvider;
 
 import java.nio.file.FileSystems;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.opaqueToken;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -109,6 +111,45 @@ class SearchApiControllerTest {
 				Arguments.of(""),
 				Arguments.of("?query="),
 				Arguments.of("?query=        ")
+		);
+	}
+
+	/*@Test
+	void search_expiredSpotifySession_unauthorizedMessage() throws Exception {
+
+		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
+		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
+				.andRespond(withUnauthorizedRequest());
+
+		mockMvc.perform(
+						get("/api/search?query=krzysztof krawczyk")
+								.with(opaqueToken()
+										.principal(examplePrincipal)
+								))
+	}*/
+
+	@ParameterizedTest
+	@MethodSource("examplesOfSearchingWithIllegalCharacters")
+	void search_illegalCharacters_errorMessage(String searchValue) throws Exception {
+
+		String receivedErrorMessage = Objects.requireNonNull(mockMvc.perform(
+						get("/api/search").param("query", searchValue)
+								.with(opaqueToken()
+										.principal(examplePrincipal)
+								))
+				.andExpect(status().isBadRequest())
+				.andReturn().getResolvedException()).getMessage();
+
+		String expectedErrorMessage = "Pole wyszukiwania zawiera niedozwolone znaki! Usuń je i spróbuj ponownie";
+		Assertions.assertEquals(expectedErrorMessage, receivedErrorMessage);
+	}
+
+	private static Stream<Arguments> examplesOfSearchingWithIllegalCharacters() {
+
+		return Stream.of(
+				Arguments.of("Kombi!@#$%?"),
+				Arguments.of("Kombi!@$%?"),
+				Arguments.of("Krzysztof Krawczyk?#?#?#?#?#")
 		);
 	}
 
