@@ -114,8 +114,8 @@ class SearchApiControllerTest {
 		);
 	}
 
-	/*@Test
-	void search_expiredSpotifySession_unauthorizedMessage() throws Exception {
+	@Test
+	void search_expiredSpotifySession_unauthorized() throws Exception {
 
 		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
 		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
@@ -126,7 +126,8 @@ class SearchApiControllerTest {
 								.with(opaqueToken()
 										.principal(examplePrincipal)
 								))
-	}*/
+				.andExpect(status().isUnauthorized());
+	}
 
 	@ParameterizedTest
 	@MethodSource("examplesOfSearchingWithIllegalCharacters")

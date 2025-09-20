@@ -140,7 +140,7 @@ class SearchWebControllerTest {
 								))
 				.andExpect(status().isOk())
 				.andExpect(view().name("search"))
-				.andExpect(model().attribute("errorMessage", StringStartsWith.startsWith("Błąd podczas wyszukiwania. Status HTTP: Unauthorized. Treść komunikatu: 401")))
+				.andExpect(model().attribute("errorMessage", StringStartsWith.startsWith("Błąd podczas wyszukiwania. Status HTTP: 401 UNAUTHORIZED. Treść komunikatu: 401")))
 				.andExpect(model().attribute("userString", "Jan Kowalski (jan.kowalski@gmail.com)"))
 				.andReturn().getModelAndView();
 

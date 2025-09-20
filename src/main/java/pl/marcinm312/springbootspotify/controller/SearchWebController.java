@@ -3,6 +3,7 @@ package pl.marcinm312.springbootspotify.controller;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.server.ResponseStatusException;
 import pl.marcinm312.springbootspotify.exception.ValidationException;
 import pl.marcinm312.springbootspotify.model.dto.SpotifyAlbumDto;
 import pl.marcinm312.springbootspotify.service.SpotifyAlbumClient;
@@ -48,11 +50,11 @@ public class SearchWebController {
 		try {
 			String token = getJwtFromAuthorization(authenticationToken);
 			albumList = spotifyAlbumClient.getAlbumsByAuthor(token, query);
-		} catch (HttpClientErrorException exc) {
+		} catch (ResponseStatusException exc) {
 			errorMessage = String.format("Błąd podczas wyszukiwania. Status HTTP: %s. Treść komunikatu: %s",
-					exc.getStatusText(), exc.getMessage());
+					exc.getStatusCode(), exc.getMessage());
 			log.error(errorMessage, exc);
-			if ("Unauthorized".equals(exc.getStatusText())) {
+			if (HttpStatusCode.valueOf(401).equals(exc.getStatusCode())) {
 				logoutActionWithReload();
 			} else {
 				errorMessage = errorMessage.replace("<EOL>", "");
