@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
+import pl.marcinm312.springbootspotify.exception.SpotifyException;
 import pl.marcinm312.springbootspotify.exception.ValidationException;
 import pl.marcinm312.springbootspotify.model.Artist;
 import pl.marcinm312.springbootspotify.model.Item;
@@ -35,13 +36,11 @@ public class SpotifyAlbumClient {
 		ResponseEntity<SpotifyAlbum> exchange = getSpotifyAlbumResponseEntity(authorName, token);
 		HttpStatusCode httpStatus = exchange.getStatusCode();
 		log.info("status={}", httpStatus);
-
 		if (!httpStatus.is2xxSuccessful()) {
 			throw new ResponseStatusException(httpStatus);
 		}
 
 		SpotifyAlbum spotifyAlbum = exchange.getBody();
-
 		if (spotifyAlbum == null) {
 			return new ArrayList<>();
 		}
@@ -95,6 +94,8 @@ public class SpotifyAlbumClient {
 					SpotifyAlbum.class);
 		} catch (HttpClientErrorException e) {
 			throw new ResponseStatusException(e.getStatusCode(), e.getMessage(), e);
+		} catch (Exception e) {
+			throw new SpotifyException(e.getMessage(), e);
 		}
 	}
 }

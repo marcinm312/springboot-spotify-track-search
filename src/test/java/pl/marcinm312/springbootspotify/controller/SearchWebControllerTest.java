@@ -23,6 +23,7 @@ import pl.marcinm312.springbootspotify.model.dto.SpotifyAlbumDto;
 import pl.marcinm312.springbootspotify.testdataprovider.ResponseReaderFromFile;
 import pl.marcinm312.springbootspotify.testdataprovider.UserDataProvider;
 
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.util.List;
 import java.util.stream.Stream;
@@ -31,8 +32,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -179,5 +179,30 @@ class SearchWebControllerTest {
 				Arguments.of("Kombi!@$%?"),
 				Arguments.of("Krzysztof Krawczyk?#?#?#?#?#")
 		);
+	}
+
+	@Test
+	void search_otherErrorWhileSearching_errorMessage() throws Exception {
+
+		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
+		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
+				.andRespond(withException(new IOException("Connection error")));
+
+		ModelAndView modelAndView = mockMvc.perform(
+						get("/app/search/?query=krzysztof krawczyk")
+								.with(oauth2Login()
+										.oauth2User(exampleOauth2User)
+										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+								))
+				.andExpect(status().isOk())
+				.andExpect(view().name("search"))
+				.andExpect(model().attribute("errorMessage", StringStartsWith.startsWith("Błąd podczas wyszukiwania")))
+				.andExpect(model().attribute("userString", "Jan Kowalski (jan.kowalski@gmail.com)"))
+				.andReturn().getModelAndView();
+
+		mockServer.verify();
+		assert modelAndView != null;
+		List<SpotifyAlbumDto> albumListFromModel = (List<SpotifyAlbumDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(0, albumListFromModel.size());
 	}
 }

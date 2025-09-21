@@ -21,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 import pl.marcinm312.springbootspotify.testdataprovider.ResponseReaderFromFile;
 import pl.marcinm312.springbootspotify.testdataprovider.UserDataProvider;
 
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.util.Map;
 import java.util.Objects;
@@ -29,8 +30,7 @@ import java.util.stream.Stream;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.opaqueToken;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -152,6 +152,21 @@ class SearchApiControllerTest {
 				Arguments.of("Kombi!@$%?"),
 				Arguments.of("Krzysztof Krawczyk?#?#?#?#?#")
 		);
+	}
+
+	@Test
+	void search_otherErrorWhileSearching_internalServerError() throws Exception {
+
+		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
+		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
+				.andRespond(withException(new IOException("Connection error")));
+
+		mockMvc.perform(
+						get("/api/search?query=krzysztof krawczyk")
+								.with(opaqueToken()
+										.principal(examplePrincipal)
+								))
+				.andExpect(status().isInternalServerError());
 	}
 
 	@Test
