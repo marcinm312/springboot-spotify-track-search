@@ -13,8 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
+import pl.marcinm312.springbootspotify.exception.SpotifyException;
 import pl.marcinm312.springbootspotify.exception.ValidationException;
 import pl.marcinm312.springbootspotify.model.dto.SpotifyAlbumDto;
 import pl.marcinm312.springbootspotify.service.SpotifyAlbumClient;
@@ -53,22 +53,24 @@ public class SearchWebController {
 		} catch (ResponseStatusException exc) {
 			errorMessage = String.format("Błąd podczas wyszukiwania. Status HTTP: %s. Treść komunikatu: %s",
 					exc.getStatusCode(), exc.getMessage());
-			log.error(errorMessage, exc);
+			response.setStatus(exc.getStatusCode().value());
 			if (HttpStatusCode.valueOf(401).equals(exc.getStatusCode())) {
-				logoutActionWithReload();
+				logoutAction();
 			} else {
 				errorMessage = errorMessage.replace("<EOL>", "");
 			}
-		} catch (ValidationException exc) {
+		} catch (ValidationException | SpotifyException exc) {
 			errorMessage = String.format(SEARCH_ERROR_FORMAT, exc.getMessage());
-			log.error(errorMessage);
+			response.setStatus(exc.getHttpStatus());
 		} catch (NullPointerException exc) {
 			errorMessage = String.format(SEARCH_ERROR_FORMAT, exc.getMessage());
 			log.error(errorMessage, exc);
-			logoutActionWithReload();
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			logoutAction();
 		} catch (Exception exc) {
 			errorMessage = String.format(SEARCH_ERROR_FORMAT, exc.getMessage());
 			log.error(errorMessage, exc);
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 
 		model.addAttribute("searchResult", albumList != null ? albumList : new ArrayList<>());
@@ -79,7 +81,7 @@ public class SearchWebController {
 		return "search";
 	}
 
-	private void logoutActionWithReload() {
+	private void logoutAction() {
 		sessionUtils.expireCurrentSession();
 	}
 

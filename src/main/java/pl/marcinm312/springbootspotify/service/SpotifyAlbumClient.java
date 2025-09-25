@@ -81,9 +81,7 @@ public class SpotifyAlbumClient {
 				+ "&type=track&market=PL&limit=50&offset=0";
 		log.info("url={}", url);
 		if (!StringMethods.isValidUrl(url)) {
-			String errorMessage = "Pole wyszukiwania zawiera niedozwolone znaki! Usuń je i spróbuj ponownie";
-			log.error(errorMessage);
-			throw new ValidationException(errorMessage);
+			throw new ValidationException("Pole wyszukiwania zawiera niedozwolone znaki! Usuń je i spróbuj ponownie");
 		}
 
 		try {
@@ -93,6 +91,7 @@ public class SpotifyAlbumClient {
 					httpEntity,
 					SpotifyAlbum.class);
 		} catch (HttpClientErrorException e) {
+			log.error(e.getMessage(), e);
 			throw new ResponseStatusException(e.getStatusCode(), e.getMessage(), e);
 		} catch (Exception e) {
 			throw new SpotifyException(e.getMessage(), e);
