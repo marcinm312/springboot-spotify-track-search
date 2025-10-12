@@ -24,12 +24,12 @@ public class SwaggerConfig {
 								.scheme("bearer")
 								.bearerFormat("Opaque")
 								.description("""
-										JWT token can be obtained by providing correct username and password in the API by Swagger:
-										1. Select a definition: public-apis;
-										2. Select controller: login-api-controller;
-										3. Select endpoint: /api/login;
-										4. Execute request with correct username and password;
-										5. Copy Bearer token from authorization response header.
+										Bearer token can be obtained by web browser:
+										1. Go to: https://developer.spotify.com
+										2. Open your web browser console and go to the Network tab
+										3. Log in to your Spotify account
+										4. In the browser console, find the request with the url: https://accounts.spotify.com/api/token
+										5. Copy the access_token value from the JSON response body.
 										""")));
 	}
 
