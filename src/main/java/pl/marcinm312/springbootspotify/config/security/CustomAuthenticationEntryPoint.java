@@ -1,4 +1,4 @@
-package pl.marcinm312.springbootspotify.config;
+package pl.marcinm312.springbootspotify.config.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

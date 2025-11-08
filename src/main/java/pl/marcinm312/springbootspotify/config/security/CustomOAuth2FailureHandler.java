@@ -1,4 +1,4 @@
-package pl.marcinm312.springbootspotify.config;
+package pl.marcinm312.springbootspotify.config.security;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;

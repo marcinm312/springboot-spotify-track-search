@@ -1,4 +1,4 @@
-package pl.marcinm312.springbootspotify.config;
+package pl.marcinm312.springbootspotify.config.security;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
