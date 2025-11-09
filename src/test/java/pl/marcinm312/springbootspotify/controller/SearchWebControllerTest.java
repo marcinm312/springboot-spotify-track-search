@@ -19,7 +19,7 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
-import pl.marcinm312.springbootspotify.model.dto.SpotifyAlbumDto;
+import pl.marcinm312.springbootspotify.model.dto.SpotifyTrackDto;
 import pl.marcinm312.springbootspotify.testdataprovider.ResponseReaderFromFile;
 import pl.marcinm312.springbootspotify.testdataprovider.UserDataProvider;
 
@@ -91,8 +91,8 @@ class SearchWebControllerTest {
 
 		mockServer.verify();
 		assert modelAndView != null;
-		List<SpotifyAlbumDto> albumListFromModel = (List<SpotifyAlbumDto>) modelAndView.getModel().get("searchResult");
-		Assertions.assertEquals(50, albumListFromModel.size());
+		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(50, tracksFromModel.size());
 	}
 
 	@ParameterizedTest
@@ -112,8 +112,8 @@ class SearchWebControllerTest {
 				.andReturn().getModelAndView();
 
 		assert modelAndView != null;
-		List<SpotifyAlbumDto> albumListFromModel = (List<SpotifyAlbumDto>) modelAndView.getModel().get("searchResult");
-		Assertions.assertEquals(0, albumListFromModel.size());
+		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(0, tracksFromModel.size());
 	}
 
 	private static Stream<Arguments> examplesOfEmptySearch() {
@@ -146,8 +146,8 @@ class SearchWebControllerTest {
 
 		mockServer.verify();
 		assert modelAndView != null;
-		List<SpotifyAlbumDto> albumListFromModel = (List<SpotifyAlbumDto>) modelAndView.getModel().get("searchResult");
-		Assertions.assertEquals(0, albumListFromModel.size());
+		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(0, tracksFromModel.size());
 	}
 
 	@ParameterizedTest
@@ -168,8 +168,8 @@ class SearchWebControllerTest {
 
 		mockServer.verify();
 		assert modelAndView != null;
-		List<SpotifyAlbumDto> albumListFromModel = (List<SpotifyAlbumDto>) modelAndView.getModel().get("searchResult");
-		Assertions.assertEquals(0, albumListFromModel.size());
+		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(0, tracksFromModel.size());
 	}
 
 	private static Stream<Arguments> examplesOfSearchingWithIllegalCharacters() {
@@ -202,7 +202,7 @@ class SearchWebControllerTest {
 
 		mockServer.verify();
 		assert modelAndView != null;
-		List<SpotifyAlbumDto> albumListFromModel = (List<SpotifyAlbumDto>) modelAndView.getModel().get("searchResult");
-		Assertions.assertEquals(0, albumListFromModel.size());
+		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(0, tracksFromModel.size());
 	}
 }

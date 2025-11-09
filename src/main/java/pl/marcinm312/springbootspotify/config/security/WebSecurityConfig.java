@@ -43,6 +43,8 @@ public class WebSecurityConfig {
 	@Order(1)
 	public static class ApiWebSecurityConfig {
 
+		private final RestTemplate restTemplate;
+
 		@Bean
 		SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
 
@@ -81,7 +83,6 @@ public class WebSecurityConfig {
 		private OpaqueTokenIntrospector spotifyIntrospector() {
 
 			return token -> {
-				RestTemplate restTemplate = new RestTemplate();
 				HttpHeaders headers = new HttpHeaders();
 				headers.setBearerAuth(token);
 

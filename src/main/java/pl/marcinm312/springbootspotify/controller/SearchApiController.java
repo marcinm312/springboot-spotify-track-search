@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import pl.marcinm312.springbootspotify.model.dto.SpotifyAlbumDto;
-import pl.marcinm312.springbootspotify.service.SpotifyAlbumClient;
+import pl.marcinm312.springbootspotify.model.dto.SpotifyTrackDto;
+import pl.marcinm312.springbootspotify.service.SpotifyTracksClient;
 
 import java.util.List;
 import java.util.Map;
@@ -20,15 +20,15 @@ import java.util.Map;
 @RequestMapping("/api/")
 public class SearchApiController {
 
-	private final SpotifyAlbumClient spotifyAlbumClient;
+	private final SpotifyTracksClient spotifyTracksClient;
 
 	@GetMapping("/search")
-	public List<SpotifyAlbumDto> search(BearerTokenAuthentication authentication, @RequestParam(required = false) String query) {
+	public List<SpotifyTrackDto> search(BearerTokenAuthentication authentication, @RequestParam(required = false) String query) {
 
 		String authenticationName = authentication.getName();
 		log.info("user={}", authenticationName);
 		String tokenValue = authentication.getToken().getTokenValue();
-		return spotifyAlbumClient.getAlbumsByAuthor(tokenValue, query);
+		return spotifyTracksClient.getTracksByAuthor(tokenValue, query);
 	}
 
 	@GetMapping("/me")

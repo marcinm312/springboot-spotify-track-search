@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @SuperBuilder
-public final class SpotifyAlbumDto {
+public final class SpotifyTrackDto {
 
 	private final String trackName;
 	private final List<String> artists;

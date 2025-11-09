@@ -10,24 +10,22 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import pl.marcinm312.springbootspotify.exception.SpotifyException;
 import pl.marcinm312.springbootspotify.exception.ValidationException;
-import pl.marcinm312.springbootspotify.model.Artist;
-import pl.marcinm312.springbootspotify.model.Item;
 import pl.marcinm312.springbootspotify.model.SpotifyAlbum;
-import pl.marcinm312.springbootspotify.model.dto.SpotifyAlbumDto;
+import pl.marcinm312.springbootspotify.model.dto.SpotifyTrackDto;
+import pl.marcinm312.springbootspotify.model.mapper.SpotifyTrackMapper;
 import pl.marcinm312.springbootspotify.utils.StringMethods;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class SpotifyAlbumClient {
+public class SpotifyTracksClient {
 
 	private final RestTemplate restTemplate;
 
-	public List<SpotifyAlbumDto> getAlbumsByAuthor(String token, String authorName) {
+	public List<SpotifyTrackDto> getTracksByAuthor(String token, String authorName) {
 
 		if (StringUtils.isBlank(authorName)) {
 			return new ArrayList<>();
@@ -45,28 +43,10 @@ public class SpotifyAlbumClient {
 			return new ArrayList<>();
 		}
 
-		List<SpotifyAlbumDto> albumList = spotifyAlbum.getTracks().getItems()
-				.stream()
-				.map(SpotifyAlbumClient::convertSpotifyItemToDto)
-				.toList();
-		log.info("albumList.size()={}", albumList.size());
-		return albumList;
-	}
-
-	private static SpotifyAlbumDto convertSpotifyItemToDto(Item item) {
-
-		List<String> artists = item.getArtists().stream()
-				.map(Artist::getName)
-				.filter(Objects::nonNull)
-				.toList();
-
-		return SpotifyAlbumDto.builder()
-				.trackName(item.getName())
-				.imageUrl(item.getAlbum().getImages().getFirst().getUrl())
-				.audioPreviewUrl(item.getPreviewUrl())
-				.artists(artists)
-				.albumName(item.getAlbum().getName())
-				.build();
+		List<SpotifyTrackDto> tracks = SpotifyTrackMapper
+				.convertSpotifyItemsToDtoList(spotifyAlbum.getTracks().getItems());
+		log.info("tracks.size()={}", tracks.size());
+		return tracks;
 	}
 
 	private ResponseEntity<SpotifyAlbum> getSpotifyAlbumResponseEntity(String authorName, String jwt) {

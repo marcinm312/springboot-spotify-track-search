@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import pl.marcinm312.springbootspotify.exception.SpotifyException;
 import pl.marcinm312.springbootspotify.exception.ValidationException;
-import pl.marcinm312.springbootspotify.model.dto.SpotifyAlbumDto;
-import pl.marcinm312.springbootspotify.service.SpotifyAlbumClient;
+import pl.marcinm312.springbootspotify.model.dto.SpotifyTrackDto;
+import pl.marcinm312.springbootspotify.service.SpotifyTracksClient;
 import pl.marcinm312.springbootspotify.utils.SessionUtils;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import java.util.Map;
 @RequestMapping("/app/")
 public class SearchWebController {
 
-	private final SpotifyAlbumClient spotifyAlbumClient;
+	private final SpotifyTracksClient spotifyTracksClient;
 	private final SessionUtils sessionUtils;
 	private final OAuth2AuthorizedClientService authorizedClientService;
 
@@ -44,12 +44,12 @@ public class SearchWebController {
 		Map<String, Object> userDetails = authenticationToken.getPrincipal().getAttributes();
 		String userString = userDetails.get("display_name") + " (" + userDetails.get("email") + ")";
 
-		List<SpotifyAlbumDto> albumList = null;
+		List<SpotifyTrackDto> tracks = null;
 		String errorMessage = "";
 
 		try {
 			String token = getJwtFromAuthorization(authenticationToken);
-			albumList = spotifyAlbumClient.getAlbumsByAuthor(token, query);
+			tracks = spotifyTracksClient.getTracksByAuthor(token, query);
 		} catch (ResponseStatusException exc) {
 			errorMessage = String.format("Błąd podczas wyszukiwania. Status HTTP: %s. Treść komunikatu: %s",
 					exc.getStatusCode(), exc.getMessage());
@@ -73,7 +73,7 @@ public class SearchWebController {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 
-		model.addAttribute("searchResult", albumList != null ? albumList : new ArrayList<>());
+		model.addAttribute("searchResult", tracks != null ? tracks : new ArrayList<>());
 		model.addAttribute("errorMessage", errorMessage);
 		model.addAttribute("userString", userString);
 		model.addAttribute("query", query);
