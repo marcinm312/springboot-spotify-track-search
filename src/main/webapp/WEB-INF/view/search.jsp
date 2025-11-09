@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.24.2/bootstrap-table.min.css"
         integrity="sha512-ThXPnGXIJOi9huerzcKWpEqyPCaCECA9/Z3Sn5P8T37S2cm57p8Zz8g5r7woyEg+F5u7n5sRYg/LW/pCmpZnDA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-        
+
     <link href="${pageContext.request.contextPath}/css/style.css" rel="stylesheet">
     <title>Lista utworów</title>
 </head>
