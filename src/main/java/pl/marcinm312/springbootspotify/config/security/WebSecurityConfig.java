@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -86,13 +87,13 @@ public class WebSecurityConfig {
 				HttpHeaders headers = new HttpHeaders();
 				headers.setBearerAuth(token);
 
-				ResponseEntity<Map> response;
+				ResponseEntity<Map<String, Object>> response;
 				try {
 					response = restTemplate.exchange(
 							"https://api.spotify.com/v1/me",
 							HttpMethod.GET,
 							new HttpEntity<>(headers),
-							Map.class
+							new ParameterizedTypeReference<>() {}
 					);
 				} catch (Exception e) {
 					throw new OAuth2AuthenticationException(new OAuth2Error("invalid_token"),
