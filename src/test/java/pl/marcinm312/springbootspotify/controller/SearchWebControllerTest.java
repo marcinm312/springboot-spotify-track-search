@@ -150,6 +150,56 @@ class SearchWebControllerTest {
 		Assertions.assertEquals(0, tracksFromModel.size());
 	}
 
+	@Test
+	void search_spotifyForbiddenError_errorMessage() throws Exception {
+
+		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
+		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
+				.andRespond(withForbiddenRequest());
+
+		ModelAndView modelAndView = mockMvc.perform(
+						get("/app/search/?query=krzysztof krawczyk")
+								.with(oauth2Login()
+										.oauth2User(exampleOauth2User)
+										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+								))
+				.andExpect(status().isForbidden())
+				.andExpect(view().name("search"))
+				.andExpect(model().attribute("errorMessage", StringStartsWith.startsWith("Błąd podczas wyszukiwania. Status HTTP: 403 FORBIDDEN. Treść komunikatu: 403")))
+				.andExpect(model().attribute("userString", "Jan Kowalski (jan.kowalski@gmail.com)"))
+				.andReturn().getModelAndView();
+
+		mockServer.verify();
+		assert modelAndView != null;
+		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(0, tracksFromModel.size());
+	}
+
+	@Test
+	void search_spotifyServerError_errorMessage() throws Exception {
+
+		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
+		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
+				.andRespond(withServerError());
+
+		ModelAndView modelAndView = mockMvc.perform(
+						get("/app/search/?query=krzysztof krawczyk")
+								.with(oauth2Login()
+										.oauth2User(exampleOauth2User)
+										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+								))
+				.andExpect(status().isInternalServerError())
+				.andExpect(view().name("search"))
+				.andExpect(model().attribute("errorMessage", StringStartsWith.startsWith("Błąd podczas wyszukiwania: 500")))
+				.andExpect(model().attribute("userString", "Jan Kowalski (jan.kowalski@gmail.com)"))
+				.andReturn().getModelAndView();
+
+		mockServer.verify();
+		assert modelAndView != null;
+		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
+		Assertions.assertEquals(0, tracksFromModel.size());
+	}
+
 	@ParameterizedTest
 	@MethodSource("examplesOfSearchingWithIllegalCharacters")
 	void search_illegalCharacters_errorMessage(String searchValue) throws Exception {

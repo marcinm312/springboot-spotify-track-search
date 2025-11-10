@@ -129,6 +129,36 @@ class SearchApiControllerTest {
 				.andExpect(status().isUnauthorized());
 	}
 
+	@Test
+	void search_spotifyForbiddenError_forbiddenStatus() throws Exception {
+
+		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
+		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
+				.andRespond(withForbiddenRequest());
+
+		mockMvc.perform(
+						get("/api/search?query=krzysztof krawczyk")
+								.with(opaqueToken()
+										.principal(examplePrincipal)
+								))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void search_spotifyServerError_internalServerError() throws Exception {
+
+		String spotifyUrl = "https://api.spotify.com/v1/search?q=krzysztof%2520krawczyk&type=track&market=PL&limit=50&offset=0";
+		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
+				.andRespond(withServerError());
+
+		mockMvc.perform(
+						get("/api/search?query=krzysztof krawczyk")
+								.with(opaqueToken()
+										.principal(examplePrincipal)
+								))
+				.andExpect(status().isInternalServerError());
+	}
+
 	@ParameterizedTest
 	@MethodSource("examplesOfSearchingWithIllegalCharacters")
 	void search_illegalCharacters_errorMessage(String searchValue) throws Exception {
