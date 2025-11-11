@@ -32,12 +32,12 @@ This application allows you to search for songs on the Spotify platform, using y
 
 #### 1. Configure Spotify Developer account 
 
-Go to: https://developer.spotify.com/dashboard/. Create a free Spotify account (if you don't have one) and log in to Spotify Developer. Then create the app following the instructions on the browser screen. In the next step, add the following **Redirect URI**: `http://localhost:8080/login/oauth2/code/spotify`. From the Spotify application console, copy the **Client ID** and **Client Secret** information.
+Go to: https://developer.spotify.com/dashboard/. Create a free Spotify account (if you don't have one) and log in to Spotify Developer. Then create the app following the instructions on the browser screen. In the next step, add the following **Redirect URI**: `http://127.0.0.1:8080/login/oauth2/code/spotify`. From the Spotify application console, copy the **Client ID** and **Client Secret** information.
 
 #### 2. Clone the repository
 
 ```bash
-git clone https://github.com/marcinm312/springboot-vaadin-spotify.git
+git clone https://github.com/marcinm312/springboot-spotify-track-search.git
 ```
 
 ### Option 1
@@ -62,4 +62,4 @@ java -Dfile.encoding=UTF-8 -Djdk.util.jar.enableMultiRelease=false -jar target/s
 
 ## API documentation
 After launching the application, the API documentation is available at the URL:
-http://localhost:8080/swagger-ui/index.html
+http://127.0.0.1:8080/swagger-ui/index.html
