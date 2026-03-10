@@ -173,7 +173,7 @@ public class WebSecurityConfig {
 									"/app/**"
 							)
 							.authenticated()
-							.anyRequest().denyAll()
+							.anyRequest().authenticated()
 					)
 
 					.oauth2Login(
