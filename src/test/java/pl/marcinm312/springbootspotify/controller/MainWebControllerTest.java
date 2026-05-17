@@ -48,7 +48,14 @@ class MainWebControllerTest {
 
 		return Stream.of(
 				Arguments.of("/css/style.css", "text/css"),
-				Arguments.of("/js/pauseOtherAudios.js", "text/javascript")
+				Arguments.of("/webjars/bootstrap/css/bootstrap.min.css", "text/css"),
+				Arguments.of("/webjars/bootstrap-icons/font/bootstrap-icons.min.css", "text/css"),
+				Arguments.of("/webjars/bootstrap-table/dist/bootstrap-table.min.css", "text/css"),
+				Arguments.of("/js/pauseOtherAudios.js", "text/javascript"),
+				Arguments.of("/webjars/jquery/jquery.min.js", "text/javascript"),
+				Arguments.of("/webjars/bootstrap/js/bootstrap.bundle.min.js", "text/javascript"),
+				Arguments.of("/webjars/bootstrap-table/dist/bootstrap-table.min.js", "text/javascript"),
+				Arguments.of("/webjars/bootstrap-table/dist/locale/bootstrap-table-pl-PL.min.js", "text/javascript")
 		);
 	}
 }
