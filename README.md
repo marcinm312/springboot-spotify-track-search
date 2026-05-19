@@ -44,7 +44,7 @@ git clone https://github.com/marcinm312/springboot-spotify-track-search.git
 
 #### 3. Create a launch configuration in your favorite IDE
 
-Using the example of IntelliJ IDE, select **JDK (Java) version 21**. Select the main class: `pl.marcinm312.springbootspotify.SpringBootSpotifyTrackSearchApplication` and set the environment variables as described above.
+Using the example of IntelliJ IDE, select **JDK (Java) version 25**. Select the main class: `pl.marcinm312.springbootspotify.SpringBootSpotifyTrackSearchApplication` and set the environment variables as described above.
 
 #### 4. Run the application using the configuration created in the previous step.
 
