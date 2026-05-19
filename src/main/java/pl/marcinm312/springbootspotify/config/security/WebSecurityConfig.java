@@ -95,7 +95,7 @@ public class WebSecurityConfig {
 							new HttpEntity<>(headers),
 							new ParameterizedTypeReference<>() {}
 					);
-				} catch (Exception e) {
+				} catch (Exception _) {
 					throw new OAuth2AuthenticationException(new OAuth2Error("invalid_token"),
 							"Spotify token introspection failed");
 				}

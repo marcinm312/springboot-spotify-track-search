@@ -16,7 +16,7 @@ public class StringMethods {
 		try {
 			new URI(url);
 			return true;
-		} catch (Exception e) {
+		} catch (Exception _) {
 			return false;
 		}
 	}
