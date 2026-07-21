@@ -34,6 +34,7 @@
     <h1 id="header">Wyszukiwarka utworów</h1>
     <div id="toolbar" class="clearfix">
         <form:form action="" method="GET" class="search-form">
+            <label for="search-input" class="visually-hidden">Szukaj</label>
             <input id="search-input" class="form-control search-input" type="search" placeholder="Szukaj" name="query" value="${query}" />
             <button type="submit" class="btn btn-success">Szukaj!</button>
         </form:form>
