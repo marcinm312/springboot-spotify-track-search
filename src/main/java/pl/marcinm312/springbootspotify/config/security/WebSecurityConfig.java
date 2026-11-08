@@ -47,7 +47,7 @@ public class WebSecurityConfig {
 		private final RestTemplate restTemplate;
 
 		@Bean
-		SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+		SecurityFilterChain apiFilterChain(HttpSecurity http) {
 
 			http.securityMatcher("/api/**") // tylko REST API
 					.authorizeHttpRequests(auth -> auth
@@ -136,7 +136,7 @@ public class WebSecurityConfig {
 		private final ClientRegistrationRepository clientRegistrationRepository;
 
 		@Bean
-		public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		public SecurityFilterChain securityFilterChain(HttpSecurity http) {
 
 			DefaultOAuth2AuthorizationRequestResolver authorizationRequestResolver = new DefaultOAuth2AuthorizationRequestResolver(this.clientRegistrationRepository, "/oauth2/authorization");
 			authorizationRequestResolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
