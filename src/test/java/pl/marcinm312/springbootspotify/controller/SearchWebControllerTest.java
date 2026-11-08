@@ -13,6 +13,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.MockMvcPrint;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -77,11 +78,13 @@ class SearchWebControllerTest {
 		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
 				.andRespond(withSuccess(ResponseReaderFromFile.readResponseFromFile(filePath), MediaType.APPLICATION_JSON));
 
+		ClientRegistration spotify = clientRegistrationRepository.findByRegistrationId("spotify");
+		Assertions.assertNotNull(spotify);
 		ModelAndView modelAndView = mockMvc.perform(
 						get("/app/search/?query=krzysztof krawczyk")
 								.with(oauth2Login()
 										.oauth2User(exampleOauth2User)
-										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+										.clientRegistration(spotify)
 								))
 				.andExpect(status().isOk())
 				.andExpect(view().name("search"))
@@ -90,7 +93,7 @@ class SearchWebControllerTest {
 				.andReturn().getModelAndView();
 
 		mockServer.verify();
-		assert modelAndView != null;
+		Assertions.assertNotNull(modelAndView);
 		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
 		Assertions.assertEquals(50, tracksFromModel.size());
 	}
@@ -99,11 +102,13 @@ class SearchWebControllerTest {
 	@MethodSource("examplesOfEmptySearch")
 	void search_searchEmptyValue_emptyResult(String urlQuery) throws Exception {
 
+		ClientRegistration spotify = clientRegistrationRepository.findByRegistrationId("spotify");
+		Assertions.assertNotNull(spotify);
 		ModelAndView modelAndView = mockMvc.perform(
 						get("/app/search/" + urlQuery)
 								.with(oauth2Login()
 										.oauth2User(exampleOauth2User)
-										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+										.clientRegistration(spotify)
 								))
 				.andExpect(status().isOk())
 				.andExpect(view().name("search"))
@@ -111,7 +116,7 @@ class SearchWebControllerTest {
 				.andExpect(model().attribute("userString", "Jan Kowalski (jan.kowalski@gmail.com)"))
 				.andReturn().getModelAndView();
 
-		assert modelAndView != null;
+		Assertions.assertNotNull(modelAndView);
 		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
 		Assertions.assertEquals(0, tracksFromModel.size());
 	}
@@ -132,11 +137,13 @@ class SearchWebControllerTest {
 		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
 				.andRespond(withUnauthorizedRequest());
 
+		ClientRegistration spotify = clientRegistrationRepository.findByRegistrationId("spotify");
+		Assertions.assertNotNull(spotify);
 		ModelAndView modelAndView = mockMvc.perform(
 						get("/app/search/?query=krzysztof krawczyk")
 								.with(oauth2Login()
 										.oauth2User(exampleOauth2User)
-										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+										.clientRegistration(spotify)
 								))
 				.andExpect(status().isUnauthorized())
 				.andExpect(view().name("search"))
@@ -145,7 +152,7 @@ class SearchWebControllerTest {
 				.andReturn().getModelAndView();
 
 		mockServer.verify();
-		assert modelAndView != null;
+		Assertions.assertNotNull(modelAndView);
 		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
 		Assertions.assertEquals(0, tracksFromModel.size());
 	}
@@ -157,11 +164,13 @@ class SearchWebControllerTest {
 		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
 				.andRespond(withForbiddenRequest());
 
+		ClientRegistration spotify = clientRegistrationRepository.findByRegistrationId("spotify");
+		Assertions.assertNotNull(spotify);
 		ModelAndView modelAndView = mockMvc.perform(
 						get("/app/search/?query=krzysztof krawczyk")
 								.with(oauth2Login()
 										.oauth2User(exampleOauth2User)
-										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+										.clientRegistration(spotify)
 								))
 				.andExpect(status().isForbidden())
 				.andExpect(view().name("search"))
@@ -170,7 +179,7 @@ class SearchWebControllerTest {
 				.andReturn().getModelAndView();
 
 		mockServer.verify();
-		assert modelAndView != null;
+		Assertions.assertNotNull(modelAndView);
 		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
 		Assertions.assertEquals(0, tracksFromModel.size());
 	}
@@ -182,11 +191,13 @@ class SearchWebControllerTest {
 		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
 				.andRespond(withServerError());
 
+		ClientRegistration spotify = clientRegistrationRepository.findByRegistrationId("spotify");
+		Assertions.assertNotNull(spotify);
 		ModelAndView modelAndView = mockMvc.perform(
 						get("/app/search/?query=krzysztof krawczyk")
 								.with(oauth2Login()
 										.oauth2User(exampleOauth2User)
-										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+										.clientRegistration(spotify)
 								))
 				.andExpect(status().isInternalServerError())
 				.andExpect(view().name("search"))
@@ -195,7 +206,7 @@ class SearchWebControllerTest {
 				.andReturn().getModelAndView();
 
 		mockServer.verify();
-		assert modelAndView != null;
+		Assertions.assertNotNull(modelAndView);
 		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
 		Assertions.assertEquals(0, tracksFromModel.size());
 	}
@@ -204,11 +215,13 @@ class SearchWebControllerTest {
 	@MethodSource("examplesOfSearchingWithIllegalCharacters")
 	void search_illegalCharacters_errorMessage(String searchValue) throws Exception {
 
+		ClientRegistration spotify = clientRegistrationRepository.findByRegistrationId("spotify");
+		Assertions.assertNotNull(spotify);
 		ModelAndView modelAndView = mockMvc.perform(
 				get("/app/search/").param("query", searchValue)
 						.with(oauth2Login()
 								.oauth2User(exampleOauth2User)
-								.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+								.clientRegistration(spotify)
 						))
 				.andExpect(status().isBadRequest())
 				.andExpect(view().name("search"))
@@ -217,7 +230,7 @@ class SearchWebControllerTest {
 				.andReturn().getModelAndView();
 
 		mockServer.verify();
-		assert modelAndView != null;
+		Assertions.assertNotNull(modelAndView);
 		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
 		Assertions.assertEquals(0, tracksFromModel.size());
 	}
@@ -238,11 +251,13 @@ class SearchWebControllerTest {
 		this.mockServer.expect(requestTo(spotifyUrl)).andExpect(method(HttpMethod.GET))
 				.andRespond(withException(new IOException("Connection error")));
 
+		ClientRegistration spotify = clientRegistrationRepository.findByRegistrationId("spotify");
+		Assertions.assertNotNull(spotify);
 		ModelAndView modelAndView = mockMvc.perform(
 						get("/app/search/?query=krzysztof krawczyk")
 								.with(oauth2Login()
 										.oauth2User(exampleOauth2User)
-										.clientRegistration(clientRegistrationRepository.findByRegistrationId("spotify"))
+										.clientRegistration(spotify)
 								))
 				.andExpect(status().isInternalServerError())
 				.andExpect(view().name("search"))
@@ -251,7 +266,7 @@ class SearchWebControllerTest {
 				.andReturn().getModelAndView();
 
 		mockServer.verify();
-		assert modelAndView != null;
+		Assertions.assertNotNull(modelAndView);
 		List<SpotifyTrackDto> tracksFromModel = (List<SpotifyTrackDto>) modelAndView.getModel().get("searchResult");
 		Assertions.assertEquals(0, tracksFromModel.size());
 	}
